@@ -140,14 +140,14 @@ router.post("/mine/:id/draw", requireAuth, async (req, res) => {
   });
 });
 
-// Eliminar una rifa en borrador
+// Eliminar una rifa (y todos sus tickets asociados)
 router.delete("/mine/:id", requireAuth, async (req, res) => {
   const raffle = await Raffle.findOne({ _id: req.params.id, owner: req.userId });
   if (!raffle) return res.status(404).json({ error: "Rifa no encontrada." });
-  if (raffle.status !== "draft") {
-    return res.status(400).json({ error: "Solo puedes eliminar rifas en borrador." });
-  }
+
+  await Ticket.deleteMany({ raffle: raffle._id });
   await raffle.deleteOne();
+
   res.json({ ok: true });
 });
 
